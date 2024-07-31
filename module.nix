@@ -18,6 +18,7 @@ in {
     users.${user} = inputs.self.homeConfigurations.default;
   };
 
+  programs.dconf.enable = lib.mkIf graphical true;
   programs.fish.enable = true;
 
   users.users.${user} = {
