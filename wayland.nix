@@ -1,6 +1,6 @@
 { config, lib, pkgs, osConfig, ... }:
 let
-  inherit (osConfig) hardware;
+  inherit (osConfig) hardware location;
 
   graphical =
     if lib.versionAtLeast osConfig.system.stateVersion "24.11"
@@ -322,8 +322,12 @@ in lib.mkIf graphical {
   programs.yt-dlp.enable = true;
 
   services.gammastep = {
+    inherit (location) provider;
+
     enable = true;
-    provider = "geoclue2";
+    latitude = location.latitude or null;
+    longitude = location.longitude or null;
+
     settings = {
       general.adjustment-method = "wayland";
     };
