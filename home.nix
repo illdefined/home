@@ -174,10 +174,17 @@ in {
         fsync = "committed";
       };
 
+      user.signingKey = "key::sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAICczPHRwY9MAwDGlcB0QgMOJjcpLJhVU3covrW9RBS62AAAABHNzaDo= primary";
+
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
       rebase.autoStash = true;
+
+      gpg.format = "ssh";
+      commit.gpgSign = true;
+      push.gpgSign = true;
+      tag.gpgSign = true;
     };
   };
 

@@ -25,7 +25,9 @@ in {
     isNormalUser = true;
     shell = config.programs.fish.package;
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGOTvXiNHTXq9wkcxdVOblHVyvcAaCfxmJp/CXI4rzMj"
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAICczPHRwY9MAwDGlcB0QgMOJjcpLJhVU3covrW9RBS62AAAABHNzaDo= primary"
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIAgnEAwe59/yY/U55y7WxGa/QI20/XMQEsQvs1/6LitRAAAABHNzaDo= backup"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGOTvXiNHTXq9wkcxdVOblHVyvcAaCfxmJp/CXI4rzMj legacy"
     ];
   };
 }
