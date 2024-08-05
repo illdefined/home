@@ -183,7 +183,6 @@ in {
 
       gpg.format = "ssh";
       commit.gpgSign = true;
-      push.gpgSign = true;
       tag.gpgSign = true;
     };
   };
