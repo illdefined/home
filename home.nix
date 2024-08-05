@@ -188,11 +188,6 @@ in {
     };
   };
 
-  programs.gpg = {
-    enable = hardware.gpgSmartcards.enable;
-    scdaemonSettings.disable-ccid = true;
-  };
-
   programs.helix = {
     enable = true;
     defaultEditor = true;
@@ -318,14 +313,7 @@ in {
     '';
   };
 
-  services.gpg-agent = {
-    enable = hardware.gpgSmartcards.enable;
-    enableSshSupport = true;
-    pinentryPackage =
-      if graphical
-      then pkgs.pinentry-gtk2
-      else pkgs.pinentry-curses;
-  };
+  services.ssh-agent.enable = true;
 
   xdg.userDirs =
   let
