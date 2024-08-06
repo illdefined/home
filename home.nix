@@ -228,6 +228,11 @@ in {
   programs.ssh = {
     enable = true;
     compression = true;
+
+    controlMaster = "auto";
+    controlPath = "\${XDG_RUNTIME_DIR}/ssh/%r@%n:%p";
+    controlPersist = "1m";
+
     matchBlocks = {
       "*.nyantec.com".user = "mvs";
       "solitary.social" = {
@@ -313,6 +318,10 @@ in {
   };
 
   services.ssh-agent.enable = true;
+
+  systemd.user.tmpfiles.rules = [
+    "d %t/ssh 700"
+  ];
 
   xdg.userDirs =
   let
