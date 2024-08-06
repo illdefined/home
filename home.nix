@@ -54,6 +54,10 @@ in {
     fend
   ];
 
+  home.sessionVariables = {
+    TMPDIR = "$XDG_RUNTIME_DIR/tmp";
+  };
+
   editorconfig = {
     enable = true;
     settings = {
@@ -321,6 +325,7 @@ in {
 
   systemd.user.tmpfiles.rules = [
     "d %t/ssh 700"
+    "d %t/tmp 700 - - 24h"
   ];
 
   xdg.userDirs =
