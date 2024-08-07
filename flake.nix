@@ -22,6 +22,10 @@
     };
   };
 
+  nixConfig = {
+    allow-import-form-derivation = true;
+  };
+
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
   let
     inherit (nixpkgs) lib;
