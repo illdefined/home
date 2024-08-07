@@ -18,6 +18,9 @@ in {
     users.${user} = inputs.self.homeConfigurations.default;
   };
 
+  nixpkgs.config.allowUnfreePredicate = lib.mkIf graphical
+    (pkg: builtins.elem (lib.getName pkg) [ "obsidian" ]);
+
   programs.dconf.enable = lib.mkIf graphical true;
   programs.fish.enable = true;
 
