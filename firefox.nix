@@ -1,11 +1,6 @@
-{ config, lib, pkgs, osConfig, ... }:
+{ config, lib, pkgs, ... }@args:
 let
-  inherit (osConfig) hardware;
-
-  graphical =
-    if lib.versionAtLeast osConfig.system.stateVersion "24.11"
-    then hardware.graphics.enable
-    else hardware.opengl.enable;
+  osConfig = args.osConfig or { };
 
   firefox-csshacks = pkgs.fetchFromGitHub {
     owner = "MrOtherGuy";
@@ -14,7 +9,7 @@ let
     sparseCheckout = [ "!/*" "/chrome" "/content" ];
     hash = "sha256-rk0jC5AMw41xt5yItY7CAxuYAFhoe5Jy2tvwgh59cPI=";
   };
-in lib.mkIf graphical {
+in lib.mkIf (osConfig.hardware.graphics.enable or false) {
   programs.firefox = {
     enable = true;
     package = pkgs.firefox;

@@ -1,11 +1,6 @@
-{ config, lib, pkgs, osConfig, ... }:
+{ config, lib, pkgs, ... }@args:
 let
-  inherit (osConfig) hardware location;
-
-  graphical =
-    if lib.versionAtLeast osConfig.system.stateVersion "24.11"
-    then hardware.graphics.enable
-    else hardware.opengl.enable;
+  osConfig = args.osConfig or { };
 
   cmd = {
     brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
@@ -26,7 +21,7 @@ let
     wpctl = "${osConfig.services.pipewire.wireplumber.package}/bin/wpctl";
     xdg-open = "${pkgs.xdg-utils}/bin/xdg-open";
   };
-in lib.mkIf graphical {
+in lib.mkIf (osConfig.hardware.graphics.enable or false) {
   home.packages = with pkgs; [
     # Image processing
     oxipng
@@ -321,17 +316,16 @@ in lib.mkIf graphical {
 
   programs.yt-dlp.enable = true;
 
-  services.gammastep = {
+  services.gammastep = lib.optionalAttrs (osConfig ? location) (
+  let inherit (osConfig) location; in {
     inherit (location) provider;
-
     enable = true;
-    latitude = location.latitude or null;
-    longitude = location.longitude or null;
-
     settings = {
       general.adjustment-method = "wayland";
     };
-  };
+  } // lib.optionalAttrs (location.provider == "manual") {
+    inherit (location) latitude longitude;
+  });
 
   services.hypridle = {
     enable = true;

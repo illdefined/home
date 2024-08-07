@@ -1,11 +1,6 @@
-inputs: { config, lib, pkgs, osConfig, ... }:
+inputs: { config, lib, pkgs, ... }@args:
 let
-  inherit (osConfig) hardware;
-
-  graphical =
-    if lib.versionAtLeast osConfig.system.stateVersion "24.11"
-    then hardware.graphics.enable
-    else hardware.opengl.enable;
+  osConfig = args.osConfig or { };
 in {
   imports = [
     inputs.nur.hmModules.nur
@@ -226,7 +221,8 @@ in {
   };
 
   programs.jq.enable = true;
-  programs.man.generateCaches = osConfig.documentation.man.generateCaches;
+  programs.man.generateCaches =
+    osConfig.documentation.man.generateCaches or false;
   programs.ripgrep.enable = true;
 
   programs.ssh = {

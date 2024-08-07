@@ -1,11 +1,6 @@
 inputs: user: { config, lib, pkgs, ... }:
 let
-  inherit (config) hardware;
-
-  graphical =
-    if lib.versionAtLeast config.system.stateVersion "24.11"
-    then hardware.graphics.enable
-    else hardware.opengl.enable;
+  graphical = config.hardware.graphics.enable;
 in {
   imports = [ inputs.home-manager.nixosModules.home-manager ];
 
