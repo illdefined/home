@@ -115,12 +115,16 @@
       }
     },
     "en_EU": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs"
+      },
       "locked": {
-        "lastModified": 1722980923,
-        "narHash": "sha256-LfkluxTvjHKxDQVPVEXoSxWB6XYADVbeNXzx0Jd+wnQ=",
+        "lastModified": 1723069969,
+        "narHash": "sha256-c5Fy4vNQLlgvcOXVhLNlh2t395WZiYpYxBEWLC2gNdY=",
         "ref": "refs/heads/main",
-        "rev": "9365484de0533cf6300578f72d7bc967cf8058b4",
-        "revCount": 7,
+        "rev": "483ed0fa469f87c8ea4d1b834f56c6d209bf45d3",
+        "revCount": 10,
         "type": "git",
         "url": "https://woof.rip/mikael/en_EU.git"
       },
@@ -181,15 +185,36 @@
     "home-manager": {
       "inputs": {
         "nixpkgs": [
+          "en_EU",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1722936497,
-        "narHash": "sha256-UBst8PkhY0kqTgdKiR8MtTBt4c1XmjJoOV11efjsC/o=",
+        "lastModified": 1723015306,
+        "narHash": "sha256-jQnFEtH20/OsDPpx71ntZzGdRlpXhUENSQCGTjn//NA=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "a6c743980e23f4cef6c2a377f9ffab506568413a",
+        "rev": "b3d5ea65d88d67d4ec578ed11d4d2d51e3de525e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1723015306,
+        "narHash": "sha256-jQnFEtH20/OsDPpx71ntZzGdRlpXhUENSQCGTjn//NA=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "b3d5ea65d88d67d4ec578ed11d4d2d51e3de525e",
         "type": "github"
       },
       "original": {
@@ -220,11 +245,27 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1722957468,
-        "narHash": "sha256-SQ0TCC4aklOhN/OzcztrKqDLY8SjpIZcyvTulzhDXs0=",
+        "lastModified": 1723019560,
+        "narHash": "sha256-O/kxmybNecC3Efr6ITOdtCzFv90/B2Iiedavj5aRWt0=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f5129fb42b9c262318130a97b47516946da3e7d7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1723151389,
+        "narHash": "sha256-9AVY0ReCmSGXHrlx78+1RrqcDgVSRhHUKDVV1LLBy28=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "2a13929e1f191b3690dd2f2db13098b04adb9043",
+        "rev": "13fe00cb6c75461901f072ae62b5805baef9f8b2",
         "type": "github"
       },
       "original": {
@@ -236,11 +277,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1722981144,
-        "narHash": "sha256-JX33xSOsMwV8hq6tiEZyPcRwd12wXV1jPPMY0HwqBbk=",
+        "lastModified": 1723221530,
+        "narHash": "sha256-Rjp1MrNLXbDr4iDk9u+ySMwZxutxLobkgRB8lWa8bMg=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "ee1bb9cdd57a86933f2fa2f6f55f5b1e00fa8458",
+        "rev": "081f0c3e9f5fb30d33ecc12cdf711b5985e7beca",
         "type": "github"
       },
       "original": {
@@ -252,9 +293,9 @@
     "root": {
       "inputs": {
         "en_EU": "en_EU",
-        "home-manager": "home-manager",
+        "home-manager": "home-manager_2",
         "nix-index-database": "nix-index-database",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": "nixpkgs_2",
         "nur": "nur",
         "stylix": "stylix"
       }
