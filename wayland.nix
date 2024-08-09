@@ -207,7 +207,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
     scripts = with pkgs.mpvScripts; [
       mpris
-      #autocrop
+      autocrop
       autodeint
     ];
   };
