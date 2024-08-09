@@ -39,7 +39,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
     # Messaging
     element-desktop
-    #signal-desktop
+    signal-desktop
 
     # Audio control
     pwvucontrol
