@@ -599,14 +599,13 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         "$mod, mouse:273, resizewindow"
       ];
 
-      "$keepassPopup" = ''class:^org\.keepassxc\.KeePassXC$, title:^(Unlock.*|.*Access Request)$'';
-
       windowrulev2 = [
         ''workspace name:A silent, class:^org\.keepassxc\.KeePassXC$, title:^Vault\.kdbx''
-        "float, $keepassPopup"
-        "center, $keepassPopup"
-        "dimaround, $keepassPopup"
-        "stayfocused, $keepassPopup"
+        ''tag +focus, class:^org\.keepassxc\.KeePassXC$, title:^(Unlock.*|.*Access Request)$''
+        "float, tag:focus"
+        "center, tag:focus"
+        "dimaround, tag:focus"
+        "stayfocused, tag:focus"
         "suppressevent maximize, class:.*"
       ];
 
