@@ -45,7 +45,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
     pwvucontrol
 
     evince
-    #inkscape
+    inkscape
     obsidian
 
     kicad
