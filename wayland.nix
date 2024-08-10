@@ -607,6 +607,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         "center, $keepassPopup"
         "dimaround, $keepassPopup"
         "stayfocused, $keepassPopup"
+        "suppressevent maximize, class:.*"
       ];
 
       exec-once = with cmd; [
