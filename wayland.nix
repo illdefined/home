@@ -436,6 +436,13 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
     };
   };
 
+  systemd.user.services = lib.genAttrs [ "syncthing" ] (service: {
+    Unit = {
+      ConditionACPower = true;
+      StopPropagatedFrom = [ "power-external.target" ];
+    };
+  });
+
   systemd.user.targets.tray = {
     Unit = {
       BindsTo = "waybar.service";

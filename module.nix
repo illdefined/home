@@ -19,6 +19,36 @@ in {
   programs.dconf.enable = lib.mkIf graphical true;
   programs.fish.enable = true;
 
+  services.udev.packages = [
+    (pkgs.writeTextDir "/etc/udev/rules.d/98-user-power-supply.rules" ''
+      SUBSYSTEM=="power_supply", KERNEL=="AC", TAG+="systemd", ENV{SYSTEMD_USER_WANTS}+="power-internal.target power-external.target"
+    '')
+  ];
+
+  systemd.user = {
+    targets = {
+      power-internal = {
+        description = "On internal power supply";
+        conflicts = [ "power-external.target" ];
+        wantedBy = [ "default.target" ];
+        unitConfig = {
+          ConditionACPower = false;
+          DefaultDependencies = false;
+        };
+      };
+
+      power-external = {
+        description = "On external power supply";
+        conflicts = [ "power-internal.target" ];
+        wantedBy = [ "default.target" ];
+        unitConfig = {
+          ConditionACPower = true;
+          DefaultDependencies = false;
+        };
+      };
+    };
+  };
+
   users.users.${user} = {
     isNormalUser = true;
     shell = config.programs.fish.package;
