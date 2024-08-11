@@ -210,6 +210,10 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
       autocrop
       autodeint
     ];
+
+    scriptOpts = {
+      autocrop.auto = false;
+    };
   };
 
   programs.texlive = {
