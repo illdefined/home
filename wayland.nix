@@ -239,6 +239,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         hyperref
         multirow
         paralist
+        preprint
         realscripts
         unicode-math
         units
