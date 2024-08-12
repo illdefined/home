@@ -241,6 +241,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         paralist
         preprint
         realscripts
+        textpos
         unicode-math
         units
         xecjk
