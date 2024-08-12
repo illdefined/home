@@ -237,6 +237,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         amsmath
         csquotes
         hyperref
+        multirow
         paralist
         realscripts
         unicode-math
