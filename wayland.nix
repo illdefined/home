@@ -235,6 +235,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         koma-script
 
         amsmath
+        bookmark
         csquotes
         hyperref
         multirow
