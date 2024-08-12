@@ -236,6 +236,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
         amsmath
         bookmark
+        booktabs
         csquotes
         hyperref
         multirow
@@ -248,6 +249,7 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         xecjk
         xecolor
         xltxtra
+        xtab
       ;
     };
   };
