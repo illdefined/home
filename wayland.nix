@@ -486,9 +486,10 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
       misc = {
         disable_hyprland_logo = true;
         vrr = 1;
-        no_direct_scanout = false;
         background_color = lib.mkForce "0x181825";
       };
+
+      render.direct_scanout = true;
 
       decoration = {
         rounding = 8;
