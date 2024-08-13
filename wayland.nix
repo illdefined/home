@@ -465,8 +465,8 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
     settings = {
       monitor = [
-        "desc:LG Display 0x06AA, highres, 0x2160, 1, bitdepth, 10"
-        "desc:Lenovo Group Limited P40w-20 V9084N0R, highres, 0x0, 1, bitdepth, 10"
+        "desc:LG Display 0x06AA, highres, 0x2160, 1"
+        "desc:Lenovo Group Limited P40w-20 V9084N0R, highres, 0x0, 1"
       ];
 
       input = {
