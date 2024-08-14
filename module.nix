@@ -4,9 +4,6 @@ let
 in {
   imports = [ inputs.home-manager.nixosModules.home-manager ];
 
-  environment.etc."xkb/symbols/greedy" = lib.mkIf graphical
-    { source = ./greedy.xkb; };
-
   home-manager = {
     useUserPackages = lib.mkDefault true;
     useGlobalPkgs = lib.mkDefault true;

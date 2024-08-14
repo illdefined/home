@@ -6,8 +6,6 @@ let
     brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
     fish = "${osConfig.programs.fish.package}/bin/fish";
     grim = "${pkgs.grim}/bin/grim";
-    hyprctl = "${config.wayland.windowManager.hyprland.finalPackage}/bin/hyprctl";
-    hyprlock = "${config.programs.hyprlock.package}/bin/hyprlock";
     jq = "${config.programs.jq.package}/bin/jq";
     keepassxc = "${pkgs.keepassxc}/bin/keepassxc";
     kitty = ''${config.programs.kitty.package}/bin/kitty --single-instance --instance-group "$XDG_SESSION_ID"'';
@@ -16,12 +14,20 @@ let
     pidof = "${pkgs.procps}/bin/pidof";
     playerctl = "${pkgs.playerctl}/bin/playerctl";
     slurp = "${pkgs.slurp}/bin/slurp";
-    tofi-run = "${config.programs.tofi.package}/bin/tofi-run";
+    swaylock = "${config.programs.swaylock.package}/bin/swaylock";
+    swaymsg = "${config.wayland.windowManager.sway.package}/bin/swaymsg";
     wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
     wpctl = "${osConfig.services.pipewire.wireplumber.package}/bin/wpctl";
     xdg-open = "${pkgs.xdg-utils}/bin/xdg-open";
   };
 in lib.mkIf (osConfig.hardware.graphics.enable or false) {
+  home.file.".xkb/symbols/greedy".source = ./greedy.xkb;
+
+  home.keyboard = {
+    layout = "greedy";
+    options = [ "ctrl:nocaps" ];
+  };
+
   home.packages = with pkgs; [
     # Image processing
     oxipng
@@ -66,11 +72,6 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
   fonts.fontconfig.enable = true;
 
-  home.keyboard = {
-    layout = "greedy";
-    options = "ctrl:nocaps";
-  };
-
   programs.beets = {
     enable = true;
     settings = {
@@ -96,6 +97,16 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
           command = "systemctl --user start mopidy-scan.service";
         }
       ];
+    };
+  };
+
+  programs.swaylock = {
+    enable = true;
+    package = pkgs.swaylock-effects;
+    settings = {
+      screenshots = true;
+      effect-blur = "5x3";
+      grace = 2;
     };
   };
 
@@ -272,16 +283,16 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
         layer = "top";
         position = "bottom";
         spacing = 4;
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "hyprland/window" ];
+        modules-left = [ "sway/workspaces" ];
+        modules-center = [ "sway/window" ];
         modules-right = [ "tray" "network" "pulseaudio" "backlight" "battery" "temperature" "cpu" "memory" "clock" ];
 
-        "hyprland/workspaces" = {
+        "sway/workspaces" = {
           #format = "{icon}";
           #format-icons.urgent = "";
         };
 
-        "hyprland/window".max-length = 64;
+        "sway/window".max-length = 64;
         temperature = {
           critical-threshold = 80;
           format = "{icon} {temperatureC} °C";
@@ -337,44 +348,6 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
     inherit (location) latitude longitude;
   });
 
-  services.hypridle = {
-    enable = true;
-    settings = {
-      general = with cmd; {
-        lock_cmd = "${pidof} hyprlock || ${hyprlock}";
-        before_sleep_cmd = "${loginctl} lock-session";
-        after_sleep_cmd = "${hyprctl} dispatch dpms on";
-      };
-
-      listener = with cmd; [
-        {
-          timeout = 210;
-          on-timeout = "${brightnessctl} --save -e set 20%-";
-          on-resume = "${brightnessctl} --save -e set +20%";
-        } {
-          timeout = 240;
-          on-timeout = "${loginctl} lock-session";
-        } {
-          timeout = 270;
-          on-timeout = "${hyprctl} dispatch dpms off";
-          on-resume = "${hyprctl} dispatch dpms on";
-        }
-      ];
-    };
-  };
-
-  services.hyprpaper =
-  let
-      wallpaper = toString ./wallpaper.png;
-  in {
-    enable = true;
-    settings = {
-      ipc = false;
-      preload = [ wallpaper ];
-      wallpaper = [ wallpaper ];
-    };
-  };
-
   services.mako = {
     enable = true;
     defaultTimeout = 5000;
@@ -411,6 +384,31 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
   services.pasystray.enable = true;
 
+  services.swayidle = {
+    enable = true;
+    events = with cmd; [
+      { event = "lock"; command = "${swaylock} -f"; }
+      { event = "before-sleep"; command = "${loginctl} lock-session"; }
+    ];
+
+    timeouts = with cmd; [
+      {
+        timeout = 210;
+        command = "${brightnessctl} --save -e set 20%-";
+        resumeCommand = "${brightnessctl} --restore";
+      }
+      {
+        timeout = 240;
+        command = "${loginctl} lock-session";
+      }
+      {
+        timeout = 270;
+        command = "${swaymsg} output '* dpms off'";
+        resumeCommand = "${swaymsg} output '* dpms on'";
+      }
+    ];
+  };
+
   services.syncthing = {
     enable = true;
     tray.enable = true;
@@ -440,10 +438,6 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
 
       sizes.terminal = 11;
     };
-
-    targets = {
-      hyprpaper.enable = lib.mkForce false;
-    };
   };
 
   systemd.user.services = lib.genAttrs [ "syncthing" ] (service: {
@@ -453,215 +447,62 @@ in lib.mkIf (osConfig.hardware.graphics.enable or false) {
     };
   });
 
-  systemd.user.targets.tray = {
-    Unit = {
-      BindsTo = "waybar.service";
-      After = "waybar.service";
-    };
-  };
-
-  wayland.windowManager.hyprland = {
+  wayland.windowManager.sway = {
     enable = true;
+    checkConfig = false;
+    xwayland = false;
 
-    settings = {
-      monitor = [
-        "desc:LG Display 0x06AA, highres, auto-down, 1"
-        "desc:Lenovo Group Limited P40w-20 V9084N0R, highres, auto-up, 1"
-      ];
+    extraSessionCommands = ''
+      export WLR_RENDERER=vulkan
 
-      input = {
-        kb_layout = "greedy";
-        kb_options = "ctrl:nocaps";
+      #for dev in /sys/class/drm/renderD*; do
+      #  if [ "$(<"$dev/device/vendor")" == 0x10de ]; then
+      #    export WLR_NO_HARDWARE_CURSORS=1
+      #    break
+      #  fi
+      #done
+    '';
+
+    config = with cmd; {
+      input."*" = {
+        xkb_layout = "us,${config.home.keyboard.layout}";
+        xkb_options = lib.concatStringsSep ","
+          config.home.keyboard.options;
+        xkb_switch_layout = "1";
       };
 
-      general = {
-        gaps_in = 4;
-        gaps_out = 8;
+      output = {
+        "*" = {
+          scale = "1";
+          background = "${./wallpaper.png} fill";
+          adaptive_sync = "on";
+        };
 
-        layout = "dwindle";
+        "Lenovo Group Limited P40w-20 V9084N0R" = {
+          resolution = "5120x2160";
+          position = "0 0";
+          subpixel = "rgb";
+        };
+
+        "LG Display 0x06AA Unknown" = {
+          position = "0 2160";
+          subpixel = "rgb";
+        };
       };
 
-      gestures.workspace_swipe = true;
-
-      misc = {
-        disable_hyprland_logo = true;
-        vrr = 1;
-        background_color = lib.mkForce "0x181825";
+      gaps = {
+        inner = 4;
+        outer = 8;
       };
 
-      render.direct_scanout = true;
+      bindkeysToCode = true;
+      modifier = "Mod4";
+      terminal = kitty;
 
-      decoration = {
-        rounding = 8;
+      keybindings = lib.mkOptionDefault {
+        XF86MonBrightnessUp = "exec ${brightnessctl} -e set +5%";
+        XF86MonBrightnessDown = "exec ${brightnessctl} -e set 5%-";
       };
-
-      dwindle.preserve_split = true;
-
-      workspace = [
-        "name:0, monitor:desc:LG Display 0x06AA, default:true"
-        "name:A, monitor:desc:LG Display 0x06AA"
-      ];
-
-      "$mod" = "SUPER";
-
-      bind = with cmd; [
-        # exit
-        "$mod SHIFT, code:28, exit"
-
-        # window state
-        "$mod SHIFT, Space, togglefloating"
-        "$mod, code:32, fullscreen"
-        "$mod, code:48, togglesplit"
-        "$mod SHIFT, code:24, killactive"
-
-        # change focus
-        "$mod, left,    movefocus, l"
-        "$mod, code:43, movefocus, l"
-        "$mod, right,   movefocus, r"
-        "$mod, code:46, movefocus, r"
-        "$mod, up,      movefocus, u"
-        "$mod, code:45, movefocus, u"
-        "$mod, down,    movefocus, d"
-        "$mod, code:44, movefocus, d"
-
-        # move window
-        "$mod SHIFT, left,    movewindow, l"
-        "$mod SHIFT, code:43, movewindow, l"
-        "$mod SHIFT, right,   movewindow, r"
-        "$mod SHIFT, code:46, movewindow, r"
-        "$mod SHIFT, up,      movewindow, u"
-        "$mod SHIFT, code:45, movewindow, u"
-        "$mod SHIFT, down,    movewindow, d"
-        "$mod SHIFT, code:44, movewindow, d"
-
-        # resize window
-        "$mod CTRL, left,    resizeactive, -20 0"
-        "$mod CTRL, code:43, resizeactive, -20 0"
-        "$mod CTRL, right,   resizeactive, 20 0"
-        "$mod CTRL, code:46, resizeactive, 20 0"
-        "$mod CTRL, up,      resizeactive, 0 -20"
-        "$mod CTRL, code:45, resizeactive, 0 -20"
-        "$mod CTRL, down,    resizeactive, 0 20"
-        "$mod CTRL, code:44, resizeactive, 0 20"
-
-        # move floating
-        "$mod ALT, left,    moveactive, -20 0"
-        "$mod ALT, code:43, moveactive, -20 0"
-        "$mod ALT, right,   moveactive, 20 0"
-        "$mod ALT, code:46, moveactive, 20 0"
-        "$mod ALT, up,      moveactive, 0 -20"
-        "$mod ALT, code:45, moveactive, 0 -20"
-        "$mod ALT, down,    moveactive, 0 20"
-        "$mod ALT, code:44, moveactive, 0 20"
-
-        # switch workspaces
-        "$mod, code:49, workspace, name:0"
-        "$mod, code:10, workspace, name:1"
-        "$mod, code:11, workspace, name:2"
-        "$mod, code:12, workspace, name:3"
-        "$mod, code:13, workspace, name:4"
-        "$mod, code:14, workspace, name:5"
-        "$mod, code:15, workspace, name:6"
-        "$mod, code:16, workspace, name:7"
-        "$mod, code:17, workspace, name:8"
-        "$mod, code:18, workspace, name:9"
-        "$mod, code:19, workspace, name:A"
-        "$mod, code:20, togglespecialworkspace"
-
-        "$mod, mouse_down, workspace, e+1"
-        "$mod, mouse_up, workspace, e-1"
-
-        # send to workspaces
-        "$mod SHIFT, code:49, movetoworkspacesilent, name:0"
-        "$mod SHIFT, code:10, movetoworkspacesilent, name:1"
-        "$mod SHIFT, code:11, movetoworkspacesilent, name:2"
-        "$mod SHIFT, code:12, movetoworkspacesilent, name:3"
-        "$mod SHIFT, code:13, movetoworkspacesilent, name:4"
-        "$mod SHIFT, code:14, movetoworkspacesilent, name:5"
-        "$mod SHIFT, code:15, movetoworkspacesilent, name:6"
-        "$mod SHIFT, code:16, movetoworkspacesilent, name:7"
-        "$mod SHIFT, code:17, movetoworkspacesilent, name:8"
-        "$mod SHIFT, code:18, movetoworkspacesilent, name:9"
-        "$mod SHIFT, code:19, movetoworkspacesilent, name:A"
-        "$mod SHIFT, code:20, movetoworkspacesilent, special"
-
-        # function keys
-        ", XF86MonBrightnessUp,   exec, ${brightnessctl} -e set +5%"
-        ", XF86MonBrightnessDown, exec, ${brightnessctl} -e set 5%-"
-        ", XF86AudioRaiseVolume,  exec, ${wpctl} set-volume @DEFAULT_AUDIO_SINK@ +2dB"
-        ", XF86AudioLowerVolume,  exec, ${wpctl} set-volume @DEFAULT_AUDIO_SINK@ -2dB"
-        ", XF86AudioMute,         exec, ${wpctl} set-mute @DEFAULT_AUDIO_SINK@ toggle"
-        ", XF86AudioMicMute,      exec, ${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-        ", XF86AudioNext,         exec, ${playerctl} next"
-        ", XF86AudioPrev,         exec, ${playerctl} previous"
-        ", XF86AudioPlay,         exec, ${playerctl} play"
-        ", XF86AudioStop,         exec, ${playerctl} pause"
-        ", XF86Explorer,          exec, ${xdg-open} https:"
-
-        # screenshots
-        "$mod, Print,             exec, ${grim} -l 9 - | ${wl-copy}"
-        "$mod SHIFT, Print,       exec, ${slurp} | ${grim} -g - -l 9 - | ${wl-copy}"
-        ''$mod CTRL, Print,        exec, ${grim} -g "$(${hyprctl} -j activewindow ${jq} -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')" -l 9 - | ${wl-copy}''
-        "$mod, Return,  exec, ${kitty}"
-        "$mod Shift, Return,  exec, ${kitty} ${fish} --private"
-        "$mod, code:55, exec, $(${tofi-run})"
-        "$mod, code:56, exec, ${loginctl} lock-session"
-      ];
-
-      bindm = [
-        # move window
-        "$mod, mouse:272, movewindow"
-
-        # resize window
-        "$mod, mouse:273, resizewindow"
-      ];
-
-      windowrulev2 = [
-        ''workspace name:A silent, class:^org\.keepassxc\.KeePassXC$, title:^Vault\.kdbx''
-        ''tag +focus, class:^org\.keepassxc\.KeePassXC$, title:^(Unlock.*|.*Access Request)$''
-        "float, tag:focus"
-        "center, tag:focus"
-        "dimaround, tag:focus"
-        "stayfocused, tag:focus"
-        "suppressevent maximize, class:.*"
-      ];
-
-      exec-once = with cmd; [
-        "${keepassxc}"
-      ];
-
-      env = [
-        "__GL_GSYNC_ALLOWED, 1"
-        "__GL_SYNC_TO_VBLANK, 1"
-        "__GL_VRR_ALLOWED, 1"
-        "CLUTTER_BACKEND, wayland"
-        "GDK_BACKEND, wayland,x11"
-        "QT_QPA_PLATFORM, wayland;xcb"
-        #"SDL_VIDEODRIVER, wayland"
-        "WLR_NO_HARDWARE_CURSORS, 1"
-      ];
-
-      animations = {
-        bezier = [
-          "wind, 0.2, 0.9, 0.2, 1.05"
-          "winMov, 0.2, 0.9, 0.2, 1.08"
-          "winIn, 0.2, 0.9, 0.2, 1.08"
-          "winOut, 0.2, 0, 0.9, 0.2"
-          "liner, 1, 1, 1, 1"
-        ];
-
-        animation = [
-          "windows, 1, 4, wind, slide"
-          "windowsIn, 1, 4, winIn, slide"
-          "windowsOut, 1, 4, winOut, slide"
-          "windowsMove, 1, 4, winMov, slide"
-          "fade, 1, 4, default"
-          "fadeOut, 1, 4, default"
-          "workspaces, 1, 4, wind"
-        ];
-      };
-
-      cursor.no_hardware_cursors = true;
     };
   };
 }
